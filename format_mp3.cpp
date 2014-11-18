@@ -1,89 +1,76 @@
 #include <string>
 #include <cstdio>
-
+#include <algorithm>
+/* suggested:
+#include <boost/algorithm/string.hpp>
+benefits: UTF-8 support! efficiency!
+*/
 using namespace std;
 
-
-void str_format_str(string &s)
+void format (string &s)
 {
-	for(int i = 0; i < s.size(); i++)
-	{
+	for(size_t i = 0; i < s.size(); i++) {
+        char curr = s.at(i);
 		//Characters to be removed from song title
-		if( s[i] == ',' || s[i] == ',' || s[i] == '.' || s[i] == '`' || s[i] == '/' || s[i] == '?' ||
-			s[i] == '\'' || s[i] == '!')
-		{
-			s.erase(i, 1);
-		}
-		
-		else if(s[i] == '&') //Special case for ampersand
-		{
-			s.erase((i-1),2);
-		}
-		
-		else if(s[i] == ' ') // Replace spaces(' ') with dashes('-')
-		{
-			s[i] = '-';
-		}
-		
-		else if(s[i] == '(') //Special case for parenthesis
-		{
-			for(int e = s.find('('); e < s.size(); e++)
-			{
-				if( s[e] == ',' || s[e] == ',' || s[e] == '.' || s[e] == '`' || s[e] == '/' || s[e] == '?' ||
-				s[e] == '\'' )
-				{
-					s.erase(e, 1);
-				}
-				
-				else if(s[e] == '&')
-				{
-					s.erase((e-1),2);
-				}
-				
-				else if(s[e] == ' ') 
-				{
-					s[e] = '-';
-				}
-				
-				else if(s[e] == ')') 
-				{
-					s.erase(e,1);
-				}
-			}
-			s[i] = '-';
-			break;
-		}
+        switch (curr) {         //can be compacted, left tall for readability
+            case ',' :
+            case '.' :
+            case '`' :
+            case '/' :
+            case '?' :
+            case '\'':
+            case '!' :
+                s.erase (i, 1);             break;
+            case '&' :
+                s.erase ((i - 1), 2);        break;
+            case ' ' :
+                s.at(i) = '-';              break;
+            case '(' :
+                {
+                size_t e = s.find ('(');
+                for (; e < s.size(); ++e) {
+                    char curr2 = s.at(e);       //utilize error checking
+                    switch (curr2) {
+                        case ',' :
+                        case '.' :
+                        case '`' :
+                        case '/' :
+                        case '?' :
+                        case '\'':
+                            s.erase (e, 1);          break;
+                        case '&' :
+                            s.erase ((e - 1), 2);      break;
+                        case ' ' :
+                            s.at (e) = '-';          break;
+                        case ')' :
+                            s.erase (e, 1);          break;
+                        default: ;
+                    }
+                }
+                s.at (i) = '-';
+                break;
+                }
+            default: ;
+        }
 	}	
 }
 
-string to_lower(const string &str)
+void to_lower(string &str)
 {
-	string lower_case_str = str;
-	for(int i = 0; i < str.size(); ++i)
-	{
-		// Character is upper case
-		if(str[i] >= 65 && str[i] <= 90)
-		{
-			// Convert to lower case
-			lower_case_str[i] = str[i] + 32;
-		}
-	}
-	return lower_case_str;
+    //reliant on ASCII assumptions, consider boost::algorithm::to_lower
+    transform (str.begin(), str.end(), str.begin(), ::tolower);
 }
 
 int main(int argc, char* argv[])
 {
 	if(argc != 2)
 	{
-		printf("Incorrect number of arguments. -h for usage");
+		printf("%s\n", "Incorrect number of arguments. -h for usage");
 		return 0;
 	}
-	
-	string str(argv[1]);
-	str = to_lower(str);
-	str_format_str(str);
-	
-	
+	string str (argv[1]);       //initialize string
+	to_lower (str);             //make lowercase
+	format (str);               //remove characters
 	printf("%s", str.c_str());
 }
 
